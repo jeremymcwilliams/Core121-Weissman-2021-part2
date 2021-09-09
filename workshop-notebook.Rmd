@@ -1,19 +1,121 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Core121 Weissman 2021 part2"
+output: pdf_document
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
+# Data Visualizations with R workshop
+## CORE 121, Professor Weissman-Unni
+## September 17th, 2021
+
+
+### Goals of this workshop:
+
+* Refresh on Loading Data Sets
+* Learn the basics of ggplot for visualizations
+* Practice creating histograms, boxplots, line graphs, bar graphs, and pie charts
+* Save a plots as an image file
+
+
+
+#### Load Palmer Penguin data set
+
+(Or, could use a data set better suited to class)
 
 ```{r}
-plot(cars)
+#install.packages("palmerpenguins")
+
+library(palmerpenguins)
+#data(package = 'palmerpenguins')
+
+penguins
+
+
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file). 
 
-The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+#### ggplot basics
+
+
+ggplot is an R package for the purpose of creating data visualizations. The "gg" translates to "grammar of graphics", and is founded in the idea that all data visualizations are comprised of three components:
+
+* data set
+* aesthetics, or visual marks that represent the data (i.e. the stuff that you see)
+* geometric objects, or "geoms" (e.g the type of plot)
+
+ggplot is part of the "tidyverse" - a series of packages that share common strategies for working with data and generating visualizations. In last Wednesday's workshop, we used some tidyverse packages (readr, dplyr) for reading and filtering datasets. Fortunately, there's a simple way to load all these libraries at once, as we'll use various functions spread throughout different packages in the tidyverse:
+
+```{r}
+library(tidyverse)
+```
+
+
+
+
+
+
+#### Line Graphs
+
+
+```{r}
+
+#ex
+ggplot(data=penguins, mapping=aes(x=body_mass_g, y=flipper_length_mm))+geom_line()
+
+```
+
+
+
+#### Histograms
+
+ex
+
+```{r}
+
+ggplot(data=penguins, aes(x=body_mass_g))+geom_histogram()
+
+```
+
+
+
+
+#### Box Plots
+
+
+ex
+ggplot(mpg, aes(class, hwy))+ geom_boxplot()
+
+maybe group by species?
+
+```{r}
+
+```
+
+
+
+
+#### Bar graphs
+
+ggplot(data, aes(x=name, y=value)) +geom_bar(stat = "identity")
+
+
+
+
+
+#### Pie charts
+
+# Basic piechart
+ggplot(data, aes(x="", y=value, fill=group)) +
+  geom_bar(stat="identity", width=1) +
+  coord_polar("y", start=0)
+
+
+
+
+
+
+
+
+
 
