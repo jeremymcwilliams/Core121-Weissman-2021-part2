@@ -22,6 +22,9 @@ output: pdf_document
 
 (Or, could use a data set better suited to class)
 
+USE FAKE DATA SIMILAR TO THEIR DATA STRUCTURE, AND PIVOT
+
+
 ```{r}
 #install.packages("palmerpenguins")
 
@@ -48,10 +51,26 @@ ggplot is part of the "tidyverse" - a series of packages that share common strat
 
 ```{r}
 library(tidyverse)
+library(janitor)
+```
+
+
+#### Histograms
+
+ex
+
+```{r}
+
+ggplot(data=penguins, aes(x=body_mass_g))+geom_histogram()
+
 ```
 
 
 
+Show avg's in bar graph or box plot
+
+
+leave line graph/2 variable stuff later
 
 
 
@@ -67,15 +86,7 @@ ggplot(data=penguins, mapping=aes(x=body_mass_g, y=flipper_length_mm))+geom_line
 
 
 
-#### Histograms
 
-ex
-
-```{r}
-
-ggplot(data=penguins, aes(x=body_mass_g))+geom_histogram()
-
-```
 
 
 
@@ -113,9 +124,51 @@ ggplot(data, aes(x="", y=value, fill=group)) +
 
 
 
+ggsave
 
 
+```{r}
+x <- read.csv("data.csv", header = TRUE, stringsAsFactors = FALSE)
+x<-subset(x, select=-c(Notes))
+#x<-read_csv("data.csv")
+x
 
+rownames(x) <- x$Variable
+x$Variable <- NULL
+#head(x)
+
+
+y <- as.data.frame(t(as.matrix(x)))
+
+#y<-as_tibble(t(as.matrix(x)))
+#colnames(y) <- y[1]
+y<-as_tibble(y)
+y$Dates<-c("9/9","9/10","9/11","9/12","9/13","9/14")
+y <- y %>%
+  select(Dates, everything())
+y$Dates <- as.Date(y$Dates , format = "%m/%d")
+#colnames(y) = y[2, ]
+ #y[-nrow(y),]
+y
+#y<-x%>%spread(key=9/9)
+#y
+```
+
+
+```{r}
+z<-read_csv("data.csv")
+#z
+# drop Notes
+z<-subset(z, select=-c(Notes))
+#z
+#inprogress<-gather(z,date,value,z$`9/9`:z$`9/14`)
+#head(inprogress)
+zz<-z %>%
+  gather(day,value,z$`9/10`:z$`9/10`) %>%
+  spread(Variable,value)
+
+zz
+```
 
 
 
