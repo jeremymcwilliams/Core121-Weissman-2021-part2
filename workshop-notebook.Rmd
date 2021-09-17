@@ -17,6 +17,9 @@ output: pdf_document
 * Practice creating histograms, boxplots, line graphs, bar graphs, and pie charts
 * Save a plots as an image file
 
+### ASK FOR HELP IF YOU NEED IT!!!!
+* Jeremy: jeremym@lclark.edu
+* R Office hours: Tues/Thurs 2-3pm, Watzek 343, or by appointment
 
 
 ### Load prerequisites
@@ -34,7 +37,9 @@ source("transpose.R")
 
 Now load your file from Google Drive. As a refresher, here are the steps:
 
+
 * In another browser tab, find your data (or use https://bit.ly/jm-core121-data)
+* Take a moment, and eliminate any units from data (ideally include in row headers)!!
 * Make sure the "Phase 2:Data" worksheet is selected
 * In the Google Sheets menu, select File->Download->Comma separated values (csv). This should download the file to your computer. 
 * Now switch back to rstudio.cloud
@@ -46,17 +51,18 @@ Now load your file from Google Drive. As a refresher, here are the steps:
 
 
 
-Now create a variable "myData", and assign it to the output of the "formatFile()" function, passing your file name as the argument"
+Now create a variable "tidyData=", and assign it to the output of the "formatFile()" function, passing your file name as the argument. We'll use this in at least one example below.
 
 
 ```{r}
+#Note: "data.csv" is Jeremy's pre-loaded data set. Change the file name below if you want to load your data set (e.g. "myData.csv" if that's what you named your csv file).
 
 gDriveData<-read_csv("data.csv")
 gDriveData
 #change file name if necessary
 
-myData<-formatFile("data.csv")
-myData
+tidyData<-formatFile("data.csv")
+tidyData
 
 
 ```
@@ -66,6 +72,8 @@ myData
 Ideally you would want to use R tools to "wrangle" your data to the format needed to create a data visualization, but it can get a little complicated in a hurry. For the sake of simplicity, let's look at how you can use the data.frame & c functions to create a data frame:
 
 ```{r}
+#Each entry inside the data.frame function creates a column of data, in order.
+#
 
 manualData <- data.frame(
   Days=c("Monday","Tuesday","Wednesday","Thursday","Friday"),
@@ -114,7 +122,7 @@ ggplot(data=<dataset variable>, mapping=aes(<details about x,y,etc.>))+
 Probably the best way to look at the differences is just to dive into some examples. Also, the above code can be typed as one line, but it can be easier to read by adding a new indented line after the "+" sign.
 
 
-
+----Remove
 (So x-axis would just be day, and then the y-axis shows the values for that variable.  Also would like them to know how to put two different variables on one bar graph - for example - graph shows total texts sent, red bars are to mom, blue bars are to sister.). 
 Things to include and suggested order: 
 simple bar graph (as described above)
@@ -122,7 +130,7 @@ box plot (showing average value for variable measured across the 3 days)
 pie chart
 xy scatter/line graph showing one variable on x and another variable on y, to compare variables
 This would mirror the order I walked through it yesterday in class, conceptually.
-
+----end remove
 
 
 
@@ -145,6 +153,9 @@ In this case we can use our original data set (gDriveData), and use the followin
 #Here we're creating a new column, called "Mean", and using the rowMeans function
 
 #We're targeting columns 2 through 7 (and all rows, hence the [,...], as the syntax is [rows,columns])
+
+# c(2:7) is the same as c(2,3,4,5,6,7)
+
 gDriveData$Mean <- rowMeans(gDriveData[,c(2:7)])
 
 gDriveData
@@ -184,6 +195,21 @@ ggsave("barplot.jpg")
 
 ```
 
+Alternate way of using "ggsave", explicitly referring to a plot assigned to a variable:
+
+```{r}
+
+myBarPlot<-ggplot(data=barData, mapping=aes(x=Variable, y=Mean, fill=Variable))+
+  geom_bar(stat="identity")+
+  labs(x="MyMeasurements", y="Average count/day", title="My Daily Diary Entries")
+
+
+# this will save the last plot generated, and will appear in the files area
+ggsave("barplot2.jpg", plot=myBarPlot)
+
+```
+
+
 
 
 YOUR TURN:
@@ -205,34 +231,78 @@ Create a bar chart with all variables from the gDriveData data set (never mind t
 
 ### Boxplot
 
-
-
+For a single boxplot, we need our data in "tidy" format. So we can use our "tidyData" variable we defined earlier. Below is the code for showing the average
 
 box plot (showing average value for variable measured across the 3 days)
 
 ```{r}
 manualData
-ggplot(data=myData, mapping=aes(x="",y=timesEmailChecked))+
+ggplot(data=tidyData, mapping=aes(x="email checked",y=timesEmailChecked))+
   geom_boxplot()+
-  stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")
+  stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")+
+  labs(y="Times email checked per day")
+
+# the "stat_summary" part generates the red dot to show the mean
+
+
+```
+
+Showing multiple boxplots side by side can be a really effective way to show differences in variables that use the same units (e.g. "times per day", etc/). The dataset structure is a little more complicated, and is probably easiest just to manually create. Here's the format:
+
+Date | Variable | Value
+-----|----------|------
+9/1  | TextsMom | 2
+9/1  | TextsDad | 1
+9/2  | TextsMom | 7
+9/2  | TextsDad | 0
+9/3  | TextsMom | 4
+9/3  | TextsDad | 2
+
+```{r}
+boxDataTexts <- data.frame(
+  Days=c("9/1","9/1","9/2","9/2","9/3","9/3"),
+  Variable=c("Mom","Dad","Mom","Dad","Mom","Dad"),
+  Value=c(2,1,7,0,4,2)
+)
+
+boxDataTexts
+```
+
+```{r}
+ggplot(data=boxDataTexts, mapping=aes(x=Variable, y=Value, fill=Variable)) +
+  geom_boxplot()+
+  stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")+
+  labs(y="Texts per day", x="Family Member", title="Texts to family members between 9/1 & 9/3")+
+  scale_fill_discrete(name = "Family Member")
+
+# the "fill=Variable" auto-assigns a color to each variable group, and generates the legend
+# stat_sumary shows the averages
+# scale_fill_discrete lets you change the legend title
+
+
+```
+
+
+YOUR TURN:
+
+Create a plot showing three boxplots side by side, using the data and code above, but adding the variable "Sister", with values 11,8, and 12.
+
+```{r}
+# Redefine your boxDataTexts variable to include the sister data, and print to screen to confirm
+
+
 
 ```
 
 
 ```{r}
-boxData <- data.frame(
-  Days=c("9/1","9/1","9/2","9/2","9/3","9/3"),
-  Variable=c("Texts to Mom","Times Checked Email","Texts to Mom","Times Checked Email","Texts to Mom","Times Checked Email"),
-  Value=c(4,2,8,3,10,4)
-)
+# Generate the plot
 
-boxData
 
-ggplot(data=boxData, mapping=aes(x=Variable, y=Value, fill=Variable)) +
-  geom_boxplot()+
-  stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")
 
 ```
+
+
 
 
 
