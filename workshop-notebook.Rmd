@@ -51,7 +51,7 @@ Now load your file from Google Drive. As a refresher, here are the steps:
 
 
 
-Now create a variable "tidyData=", and assign it to the output of the "formatFile()" function, passing your file name as the argument. We'll use this in at least one example below.
+Now create a variable "tidyData", and assign it to the output of the "formatFile()" function, passing your file name as the argument. We'll use this in at least one example below.
 
 
 ```{r}
@@ -64,8 +64,11 @@ gDriveData
 tidyData<-formatFile("data.csv")
 tidyData
 
+# if this doesn't work on your data set, don't fret! Just use the pre-loaded 'data.csv' file for today, and ask Jeremy later.
 
 ```
+
+
 
 ### Manually creating data sets
 
@@ -114,23 +117,12 @@ Now we're going to use the tidyverse package "ggplot" to create our data visuali
 
 The basic structure of ggplot code looks like this (the stuff inside the "<>" isn't real code...it's just placeholder text for info you'll fill in):
 
-ggplot(data=<dataset variable>, mapping=aes(<details about x,y,etc.>))+
+ggplot(data=<data set variable>, mapping=aes(<details about x,y,etc.>))+
   geom_<type of plot>(<sometimes more stuff, depending on the plot type>)+
   <sometimes other stuff, but it depends!>
 
 
 Probably the best way to look at the differences is just to dive into some examples. Also, the above code can be typed as one line, but it can be easier to read by adding a new indented line after the "+" sign.
-
-
-----Remove
-(So x-axis would just be day, and then the y-axis shows the values for that variable.  Also would like them to know how to put two different variables on one bar graph - for example - graph shows total texts sent, red bars are to mom, blue bars are to sister.). 
-Things to include and suggested order: 
-simple bar graph (as described above)
-box plot (showing average value for variable measured across the 3 days)
-pie chart
-xy scatter/line graph showing one variable on x and another variable on y, to compare variables
-This would mirror the order I walked through it yesterday in class, conceptually.
-----end remove
 
 
 
@@ -150,15 +142,19 @@ In this case we can use our original data set (gDriveData), and use the followin
 
 ```{r}
 
+
+
+gDriveData$Mean <- rowMeans(gDriveData[,c(2:7)])
+
+gDriveData
+
+
 #Here we're creating a new column, called "Mean", and using the rowMeans function
 
 #We're targeting columns 2 through 7 (and all rows, hence the [,...], as the syntax is [rows,columns])
 
 # c(2:7) is the same as c(2,3,4,5,6,7)
 
-gDriveData$Mean <- rowMeans(gDriveData[,c(2:7)])
-
-gDriveData
 ```
 
 
@@ -214,7 +210,7 @@ ggsave("barplot2.jpg", plot=myBarPlot)
 
 YOUR TURN:
 
-Create a bar chart with all variables from the gDriveData data set (never mind that the y units aren't the same, though normally you would!). Then save it as "barplot2.jpg".
+Create a bar chart with all variables from the gDriveData data set (never mind that the y units aren't the same, though normally you would!). Then save it as "barplot3.jpg".
 
 ```{r}
 
@@ -233,21 +229,21 @@ Create a bar chart with all variables from the gDriveData data set (never mind t
 
 For a single boxplot, we need our data in "tidy" format. So we can use our "tidyData" variable we defined earlier. Below is the code for showing the average
 
-box plot (showing average value for variable measured across the 3 days)
+In this case, we're going to create a plot of the variable "timesEmailChecked"
 
 ```{r}
-manualData
-ggplot(data=tidyData, mapping=aes(x="email checked",y=timesEmailChecked))+
+
+ggplot(data=tidyData, mapping=aes(x="",y=timesEmailChecked))+
   geom_boxplot()+
   stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")+
-  labs(y="Times email checked per day")
+  labs(y="Times email checked per day", x="email checked", title="Boxplot of Times Email checked, Sept 9-14")
 
 # the "stat_summary" part generates the red dot to show the mean
 
 
 ```
 
-Showing multiple boxplots side by side can be a really effective way to show differences in variables that use the same units (e.g. "times per day", etc/). The dataset structure is a little more complicated, and is probably easiest just to manually create. Here's the format:
+Showing multiple boxplots side by side can be a really effective way to show differences in variables that use the same units (e.g. "times per day", etc/). The data set structure is a little more complicated, and is probably easiest just to manually create. Here's the format:
 
 Date | Variable | Value
 -----|----------|------
@@ -316,6 +312,7 @@ B    | 10
 C    | 12
 D    | 40
 
+We're going to manually create a data set for this, though we could use the same approach as the bar data above if we wanted to display averages of data.
 
 ```{r}
 
@@ -328,32 +325,85 @@ pieData <- data.frame(
 pieData
 
 
+```
+
+
+
+
+
+
+```{r}
+
 # Basic piechart
 ggplot(data=pieData, aes(x="", y=value, fill=group)) +
   geom_bar(stat="identity", width=1, color="white") +
-  coord_polar("y", start=0)
+  coord_polar("y", start=0)+
+  labs(title="Texts per day", y="", x="")+
+  scale_fill_discrete(name = "Day of the week")
+
+
+
+
+
+# This one is a little unusual...it uses the geom_bar function, and the "coord_polar" function turns it into a circle
+# in the labs function, leaving x&y blank b/c it doesn't really make sense
+# scale_fill_discrete 
+
+
+```
+
+
+YOUR TURN:
+
+Create a pie chart using the barData data set from above (it has the same data structure):
+
+```{r}
+
 
 
 
 
 
 ```
+
+
+
 
 
 
 ### x/y plots 
 
-Can show a relationship (or lack thereof) between two variables. In this case, we need our data to be "tidy".
+Can show a relationship (or lack thereof) between two variables. In this case, we need our data to be "tidy", so we can use the "tidyData" variable.
+
+
 
 ```{r}
 myData
-ggplot(data=myData, mapping=aes(x=bananasEaten, y=minutesExercised))+
-  geom_line()+
+ggplot(data=tidyData, mapping=aes(x=bananasEaten, y=minutesExercised))+
+  geom_line(color="blue")+
   labs(x="Bananas Eaten", y="Minutes Exercised", title="Early September Bananas to Exercise relationship")
+
+# in the aes portion, define your x and y variables based upon the column headings of the data set.
+# we can give our line some color within the geom_line function
 
 ```
 
 
+
+YOUR TURN:
+
+Generate an x/y line plot, selecting two variables of your choosing. See any intersting relationships?
+
+
+```{r}
+
+
+
+
+
+
+
+```
 
 
 
@@ -362,15 +412,15 @@ ggplot(data=myData, mapping=aes(x=bananasEaten, y=minutesExercised))+
 
 #### Histograms
 
-Histograms show frequency distriution of data. Often they're used to tell if your data fits a "normal" (i.e. bell curved) distribution.
+Histograms show frequency distribution of data. Often they're used to tell if your data fits a "normal" (i.e. bell curved) distribution.
 
 
 
 
 ```{r}
 
-ggplot(data=myData, mapping=aes(x=hoursOfSleep))+
-  geom_histogram(color="blue",binwidth=3)
+ggplot(data=tidyData, mapping=aes(x=hoursOfSleep))+
+  geom_histogram(color="blue")
 
 ```
 
@@ -389,74 +439,9 @@ For more on histograms using ggplot, check out the tutorial here: https://www.sh
 
 
 
-Show avg's in bar graph or box plot
-
-
-leave line graph/2 variable stuff later
-
-
-
-#### Line Graphs
-
-
-```{r}
-
-#ex
-ggplot(data=myData, mapping=aes(x=body_mass_g, y=flipper_length_mm))+geom_line()
-
-```
-
-
-
-
-
-
-
-
-#### Box Plots
-
-
-ex
-ggplot(mpg, aes(class, hwy))+ geom_boxplot()
-
-
-
-```{r}
-ggplot(data=myData, mapping=aes(y=textsToMom))+geom_boxplot()
-```
-
-
-
-
-#### Bar graphs
-
-ggplot(data, aes(x=name, y=value)) +geom_bar(stat = "identity")
-
-
-
-
-
-#### Pie charts
-
-# Basic piechart
-ggplot(data, aes(x="", y=value, fill=group)) +
-  geom_bar(stat="identity", width=1) +
-  coord_polar("y", start=0)
-
-
-
-
-ggsave
-```{r}
-variety=rep(LETTERS[1:7], each=40)
-treatment=rep(c("high","low"),each=20)
-note=seq(1:280)+sample(1:150, 280, replace=T)
-data=data.frame(variety, treatment ,  note)
-
-data
-```
-
-
+### ASK FOR HELP IF YOU NEED IT!!!!
+* Jeremy: jeremym@lclark.edu
+* R Office hours: Tues/Thurs 2-3pm, Watzek 343, or by appointment
 
 
 
