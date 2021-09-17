@@ -12,58 +12,310 @@ output: pdf_document
 ### Goals of this workshop:
 
 * Refresh on Loading Data Sets
+* Manually Creating Data sets
 * Learn the basics of ggplot for visualizations
 * Practice creating histograms, boxplots, line graphs, bar graphs, and pie charts
 * Save a plots as an image file
 
 
 
-#### Load Palmer Penguin data set
+### Load prerequisites
 
-(Or, could use a data set better suited to class)
-
-USE FAKE DATA SIMILAR TO THEIR DATA STRUCTURE, AND PIVOT
+First we need to load the Tidyverse, and a custom function for converting your data to "tidy" format:
 
 
 ```{r}
-#install.packages("palmerpenguins")
+library(tidyverse)
 
-library(palmerpenguins)
-#data(package = 'palmerpenguins')
 
-penguins
+#contains a function named "formatFile" to put data in "tidy" format, when needed
+source("transpose.R")
+```
+
+Now load your file from Google Drive. As a refresher, here are the steps:
+
+* In another browser tab, find your data (or use https://bit.ly/jm-core121-data)
+* Make sure the "Phase 2:Data" worksheet is selected
+* In the Google Sheets menu, select File->Download->Comma separated values (csv). This should download the file to your computer. 
+* Now switch back to rstudio.cloud
+* In the Files tab in the lower right-hand corner, click "Upload"
+* Click "Choose File" to locate it on your computer. 
+* Once you've selected the file, click "Ok" to begin the upload.
+* Once it's loaded, you should see it listed among your files in the Files tab.
+* Finally, you may want to rename the file to something simple, just to make it easier when you use the read_csv function. Click the checkbox next to the file, click 'Rename', and call it something like 'myData.csv'
+
+
+
+Now create a variable "myData", and assign it to the output of the "formatFile()" function, passing your file name as the argument"
+
+
+```{r}
+
+gDriveData<-read_csv("data.csv")
+gDriveData
+#change file name if necessary
+
+myData<-formatFile("data.csv")
+myData
+
+
+```
+
+### Manually creating data sets
+
+Ideally you would want to use R tools to "wrangle" your data to the format needed to create a data visualization, but it can get a little complicated in a hurry. For the sake of simplicity, let's look at how you can use the data.frame & c functions to create a data frame:
+
+```{r}
+
+manualData <- data.frame(
+  Days=c("Monday","Tuesday","Wednesday","Thursday","Friday"),
+  TextsToMom=c(13,7,9,21,2),
+  TimesEmailChecked=c(3,4,7,4,1)
+)
+
+manualData
+
+```
+
+YOUR TURN:
+Manually create a data frame with an output that looks like this:
+
+Date | MoneySpent
+----  -----------
+9/9  | 3.00
+9/10 | 4.50
+9/11 | 20.00
+9/12 | 12.99
+
+```{r}
+
+#Hint, make sure the Date values are in quotes
 
 
 ```
 
 
 
-#### ggplot basics
+### ggplot basics
 
-
-ggplot is an R package for the purpose of creating data visualizations. The "gg" translates to "grammar of graphics", and is founded in the idea that all data visualizations are comprised of three components:
+Now we're going to use the tidyverse package "ggplot" to create our data visualizations. The "gg" translates to "grammar of graphics", and is founded in the idea that all data visualizations are comprised of three components:
 
 * data set
 * aesthetics, or visual marks that represent the data (i.e. the stuff that you see)
 * geometric objects, or "geoms" (e.g the type of plot)
 
-ggplot is part of the "tidyverse" - a series of packages that share common strategies for working with data and generating visualizations. In last Wednesday's workshop, we used some tidyverse packages (readr, dplyr) for reading and filtering datasets. Fortunately, there's a simple way to load all these libraries at once, as we'll use various functions spread throughout different packages in the tidyverse:
+The basic structure of ggplot code looks like this (the stuff inside the "<>" isn't real code...it's just placeholder text for info you'll fill in):
+
+ggplot(data=<dataset variable>, mapping=aes(<details about x,y,etc.>))+
+  geom_<type of plot>(<sometimes more stuff, depending on the plot type>)+
+  <sometimes other stuff, but it depends!>
+
+
+Probably the best way to look at the differences is just to dive into some examples. Also, the above code can be typed as one line, but it can be easier to read by adding a new indented line after the "+" sign.
+
+
+
+(So x-axis would just be day, and then the y-axis shows the values for that variable.  Also would like them to know how to put two different variables on one bar graph - for example - graph shows total texts sent, red bars are to mom, blue bars are to sister.). 
+Things to include and suggested order: 
+simple bar graph (as described above)
+box plot (showing average value for variable measured across the 3 days)
+pie chart
+xy scatter/line graph showing one variable on x and another variable on y, to compare variables
+This would mirror the order I walked through it yesterday in class, conceptually.
+
+
+
+
+### bar graphs
+
+Initial strategy: we need our data in this format:
+
+name | value
+A    | 25
+B    | 10
+C    | 12
+D    | 40
+
+Let's create a bar graph that shows the mean of some of the variables in our data set.
+
+In this case we can use our original data set (gDriveData), and use the following code to calculate the average of each row:
 
 ```{r}
-library(tidyverse)
-library(janitor)
+
+#Here we're creating a new column, called "Mean", and using the rowMeans function
+
+#We're targeting columns 2 through 7 (and all rows, hence the [,...], as the syntax is [rows,columns])
+gDriveData$Mean <- rowMeans(gDriveData[,c(2:7)])
+
+gDriveData
 ```
+
+
+Say we wanted just the 1st and 3rd rows for our plot, and we only care about the 1st and 9th columns. We can create a 
+
+
+```{r}
+barData<-gDriveData[c(1,3),c(1,9)]
+barData
+```
+
+Now that our data is ready, we can look at the bar chart code:
+
+```{r}
+
+ggplot(data=barData, mapping=aes(x=Variable, y=Mean, fill=Variable))+
+  geom_bar(stat="identity")+
+  labs(x="MyMeasurements", y="Average count/day", title="My Daily Diary Entries")
+
+
+# barData is the data set
+# x & y refer to the column headings
+# the "fill=Variable" creates the color and legend
+# in geom_bar, stat="identity" means "use the values in the dataset"
+# "labs" lets you create labels for x- and y- axes, and the title
+
+
+```
+
+I can now save this as a file, using "ggsave":
+```{r}
+# this will save the last plot generated, and will appear in the files area
+ggsave("barplot.jpg")
+
+```
+
+
+
+YOUR TURN:
+
+Create a bar chart with all variables from the gDriveData data set (never mind that the y units aren't the same, though normally you would!). Then save it as "barplot2.jpg".
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+
+
+### Boxplot
+
+
+
+
+box plot (showing average value for variable measured across the 3 days)
+
+```{r}
+manualData
+ggplot(data=myData, mapping=aes(x="",y=timesEmailChecked))+
+  geom_boxplot()+
+  stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")
+
+```
+
+
+```{r}
+boxData <- data.frame(
+  Days=c("9/1","9/1","9/2","9/2","9/3","9/3"),
+  Variable=c("Texts to Mom","Times Checked Email","Texts to Mom","Times Checked Email","Texts to Mom","Times Checked Email"),
+  Value=c(4,2,8,3,10,4)
+)
+
+boxData
+
+ggplot(data=boxData, mapping=aes(x=Variable, y=Value, fill=Variable)) +
+  geom_boxplot()+
+  stat_summary(fun=mean, geom="point", shape=20, size=5, color="red", fill="red")
+
+```
+
+
+
+### Pie chart
+
+Initial strategy: we need our data in this format:
+
+name | value
+A    | 25
+B    | 10
+C    | 12
+D    | 40
+
+
+```{r}
+
+# Create Data
+pieData <- data.frame(
+  group=c("Monday","Tuesday","Wednesday","Thursday","Friday"),
+  value=c(13,7,9,21,2)
+)
+
+pieData
+
+
+# Basic piechart
+ggplot(data=pieData, aes(x="", y=value, fill=group)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0)
+
+
+
+
+
+```
+
+
+
+### x/y plots 
+
+Can show a relationship (or lack thereof) between two variables. In this case, we need our data to be "tidy".
+
+```{r}
+myData
+ggplot(data=myData, mapping=aes(x=bananasEaten, y=minutesExercised))+
+  geom_line()+
+  labs(x="Bananas Eaten", y="Minutes Exercised", title="Early September Bananas to Exercise relationship")
+
+```
+
+
+
+
+
+
 
 
 #### Histograms
 
-ex
+Histograms show frequency distriution of data. Often they're used to tell if your data fits a "normal" (i.e. bell curved) distribution.
+
+
+
 
 ```{r}
 
-ggplot(data=penguins, aes(x=body_mass_g))+geom_histogram()
+ggplot(data=myData, mapping=aes(x=hoursOfSleep))+
+  geom_histogram(color="blue",binwidth=3)
 
 ```
+
+One really key concept of histograms is the idea of "bins". You can think of a bin as a range in which data points can fall. Say you have a data set containing numbers from 0 to 10, and your histogram has 4 bins. That means data can fall into these specific bins:
+
+* 0-2.5
+* 2.5-5
+* 5-7.5
+* 7.5-10
+
+How might the histogram look different if you had 10 bins? Or 1 bin?
+
+
+For more on histograms using ggplot, check out the tutorial here: https://www.sharpsightlabs.com/blog/histogram-r-ggplot2/
+
 
 
 
@@ -80,7 +332,7 @@ leave line graph/2 variable stuff later
 ```{r}
 
 #ex
-ggplot(data=penguins, mapping=aes(x=body_mass_g, y=flipper_length_mm))+geom_line()
+ggplot(data=myData, mapping=aes(x=body_mass_g, y=flipper_length_mm))+geom_line()
 
 ```
 
@@ -97,10 +349,10 @@ ggplot(data=penguins, mapping=aes(x=body_mass_g, y=flipper_length_mm))+geom_line
 ex
 ggplot(mpg, aes(class, hwy))+ geom_boxplot()
 
-maybe group by species?
+
 
 ```{r}
-
+ggplot(data=myData, mapping=aes(y=textsToMom))+geom_boxplot()
 ```
 
 
@@ -125,50 +377,18 @@ ggplot(data, aes(x="", y=value, fill=group)) +
 
 
 ggsave
-
-
 ```{r}
-x <- read.csv("data.csv", header = TRUE, stringsAsFactors = FALSE)
-x<-subset(x, select=-c(Notes))
-#x<-read_csv("data.csv")
-x
+variety=rep(LETTERS[1:7], each=40)
+treatment=rep(c("high","low"),each=20)
+note=seq(1:280)+sample(1:150, 280, replace=T)
+data=data.frame(variety, treatment ,  note)
 
-rownames(x) <- x$Variable
-x$Variable <- NULL
-#head(x)
-
-
-y <- as.data.frame(t(as.matrix(x)))
-
-#y<-as_tibble(t(as.matrix(x)))
-#colnames(y) <- y[1]
-y<-as_tibble(y)
-y$Dates<-c("9/9","9/10","9/11","9/12","9/13","9/14")
-y <- y %>%
-  select(Dates, everything())
-y$Dates <- as.Date(y$Dates , format = "%m/%d")
-#colnames(y) = y[2, ]
- #y[-nrow(y),]
-y
-#y<-x%>%spread(key=9/9)
-#y
+data
 ```
 
 
-```{r}
-z<-read_csv("data.csv")
-#z
-# drop Notes
-z<-subset(z, select=-c(Notes))
-#z
-#inprogress<-gather(z,date,value,z$`9/9`:z$`9/14`)
-#head(inprogress)
-zz<-z %>%
-  gather(day,value,z$`9/10`:z$`9/10`) %>%
-  spread(Variable,value)
 
-zz
-```
+
 
 
 
